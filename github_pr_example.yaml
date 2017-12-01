@@ -1,0 +1,100 @@
+# directories to search for interaction files (ia_*.rb), they will be 'require'd
+# this is optional, it can also be defined as command line parameter
+interaction_dirs:
+  - /some/where/else/interactions
+# templating is not required, but might make it better readable
+template:
+  cmd_parameters: &cmd_parameters
+    standard: &cmd_parameters_standard
+      foo: bar
+      number: 2
+      anotherparam: baz
+    stable: &cmd_parameters_stable
+      <<: *cmd_parameters_standard
+      number: 3
+      other: foobar
+  user:
+    name_of_user_list: &user_list
+      - username
+  team:
+    name_of_team_list: &team_list1
+      - name: orgname/groupname1
+        id: 123456
+      - name: orgname/groupname2
+        id: 2345678
+    name_of_team_list2: &team_list2
+      - name: otherorgname/also_a_groupname
+        id: 345678
+  filter:
+    # filter and action classes are defined in interaction files
+    # there they are suffixed with .*Filter or .*Action
+    filter_chain1: &filter_chain1
+      # match the name of the target merge branch
+      - type: MergeBranch
+        config:
+          # can be a list of several branch names
+          branches:
+            - master
+      # match the latest status of the latest sha1sum of the PR
+      # can be one of [unseen, rebuild, forcerebuild, all]
+      #   unseen: no status exists
+      #   rebuild: unseen + pending status
+      #   forcerebuild: rebuild + failure/error status
+      #   all: all open pull requests (incl. success status)
+      - type: Status
+        config:
+          status: unseen
+      # match users and teams to verify that the PR comes from a trusted source
+      - type: TrustedSource
+        config:
+          users:
+            *user_list
+          teams:
+            *team_list1
+      # match the changed files in the PR to check if/how we care about the PR
+      - type: FileMatch
+        config:
+          paths:
+            # a list of regexp that will be matched against the changed files of the PRs
+            -  !ruby/regexp '/scripts\/(foo|bar\.sh|lib\/.*)$/'
+            -  !ruby/regexp '/scripts\/other-stuff\//'
+        blacklist_handler:
+          # action(s) for the PRs that do not match the filter (blacklist)
+          - type: SetStatus
+            parameters:
+              status: success
+              message: pr testing not applicable
+        whitelist_handler:
+          # action(s) for the PRs that do match the filter (whitelist)
+          - type: SetStatus
+            parameters:
+              status: pending
+              message: Queued a pull request build
+          # you can define your own Action classes in your custom interaction file(s)
+          - type: RunCommand
+            parameters:
+              command: dig
+              parameters:
+                - -t
+                - TXT
+                - google.com
+# definition of the orgs and repos to be processed wiht this config
+pr_processing:
+  - config:
+      organization: github-org
+      #repositories:
+      #  - repo1
+      # if both repository and repository_filter are set, repositories has precedence
+      repository_filter:
+        - !ruby/regexp '/repo-?sitory.*/'
+        - !ruby/regexp '/^abc/'
+      # the context is shown in the github webui
+      context: company/myPRbuild
+    filter: *suse_automatain1
+  # it can have many of these entries
+  - config:
+      organization: other-org
+      repositories:
+        - automation2
+      context: suse/other
+    filter: *other_definition
