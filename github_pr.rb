@@ -6,6 +6,8 @@ require 'yaml'
 require_relative 'githubclient'
 require_relative 'githubprworker'
 
+puts "This is only a test PR. Do not merge it."
+
 ## options
 base_para = {}
 options = {}
