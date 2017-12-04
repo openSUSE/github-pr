@@ -1,0 +1,31 @@
+inherit_from: .hound.suse.yml
+
+AllCops:
+  TargetRubyVersion: 2.1
+  DisplayStyleGuide: true
+  DisplayCopNames: true
+
+Style/AlignHash:
+  EnforcedHashRocketStyle: key
+  EnforcedColonStyle: key
+
+Style/Documentation:
+  Enabled: false
+
+Lint/UnusedMethodArgument:
+  Enabled: false
+
+Lint/UnusedBlockArgument:
+  Enabled: false
+
+Metrics/MethodLength:
+  Max: 50
+
+Metrics/ClassLength:
+  Max: 500
+
+Metrics/ModuleLength:
+  Max: 500
+
+Metrics/BlockLength:
+  Max: 40
