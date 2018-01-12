@@ -1,0 +1,70 @@
+template:
+  cmd_parameters: &cmd_parameters
+    standard: &cmd_parameters_standard
+      foo: bar
+      number: 2
+      anotherparam: baz
+    stable: &cmd_parameters_stable
+      <<: *cmd_parameters_standard
+      number: 3
+      other: foobar
+  user:
+    name_of_user_list: &user_list
+      - testusername
+      - jdsn
+      - openSUSE
+  team:
+    name_of_team_list: &team_list1
+      - name: orgname/groupname1
+        id: 123456
+      - name: orgname/groupname2
+        id: 2345678
+    name_of_team_list2: &team_list2
+      - name: otherorgname/also_a_groupname
+        id: 345678
+  filter:
+    filter_chain1: &filter_chain1
+      - type: MergeBranch
+        config:
+          branches:
+            - master
+      - type: Status
+        config:
+          status: unseen
+      - type: TrustedSource
+        config:
+          users:
+            *user_list
+          teams:
+            *team_list1
+      - type: FileMatch
+        config:
+          paths:
+            # a list of regexp that will be matched against the changed files of the PRs
+            -  !ruby/regexp '/scripts\/testscript.sh$/'
+            -  !ruby/regexp '/scripts\/otherscript$/'
+            -  !ruby/regexp '/github_pr.rb$/'
+        blacklist_handler:
+          - type: SetStatus
+            parameters:
+              status: success
+              message: pr testing not applicable
+        whitelist_handler:
+          - type: SetStatus
+            parameters:
+              status: pending
+              message: Queued a pull request build
+          - type: RunCommand
+            parameters:
+              command: dig
+              parameters:
+                - -t
+                - TXT
+                - opensuse.org
+pr_processing:
+  - config:
+      organization: openSUSE
+      repositories:
+        - github-pr
+      context: suse/rspec
+    filter: *filter_chain1
