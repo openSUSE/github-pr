@@ -1,0 +1,15 @@
+{
+  "state": "success",
+  "statuses":
+    [
+      {
+        "state": "success",
+        "context": "suse/rspec"
+      },
+      {
+        "state": "pending",
+        "context": "other"
+      }
+    ],
+  "sha": "12345678abcdef4e2a5618c491dfb4e293498c0b"
+}

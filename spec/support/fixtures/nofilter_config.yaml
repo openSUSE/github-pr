@@ -1,0 +1,10 @@
+template:
+  filter:
+    filter_chain1: &filter_chain1
+pr_processing:
+  - config:
+      organization: openSUSE
+      repositories:
+        - github-pr
+      context: suse/rspec
+    filter: *filter_chain1

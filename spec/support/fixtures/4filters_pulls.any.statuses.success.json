@@ -1,0 +1,8 @@
+{
+  :state => "success",
+  :statuses =>
+    [{
+      :state => "success",
+      :context => "suse/mkcloud",
+    }]
+}
