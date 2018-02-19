@@ -158,9 +158,9 @@ case base_para[:action]
     require_parameter(options[:sha], 'SHA1 sum undefined.')
     require_parameter(options[:status], 'Status undefined.')
     GithubClient.new(options).create_status(options[:sha], {
-      status: options[:status],
-      message: options[:message],
-      target_url: options[:target_url]
+      "status" => options[:status],
+      "message" => options[:message],
+      "target_url" => options[:target_url]
     })
   when "pr-info"
     prevent_parameter(base_para[:config], 'Config file should not be defined for this action.')
