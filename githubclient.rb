@@ -32,11 +32,16 @@ class GithubClient
 
   def create_status(commit, details)
     result = details["status"].to_sym
+    the_context = begin
+      context + "/" + details["context_suffix"]
+    rescue
+      context
+    end
     GithubAPI.new.client.create_status(
       org_repo,
       commit,
       result,
-      { context: context,
+      { context: the_context,
         description: status_description(details["message"], result),
         target_url: details["target_url"].to_s
       }
