@@ -129,11 +129,11 @@ module GithubPR
     def action(pull)
       # logging to stdout
       puts <<-HEREDOC
+
 Processing #{pull.base.repo.full_name} PR id #{pull.number} by #{pull.head.user.login}
   SHA1: #{pull.head.sha}
   Title: #{pull.title}
   Link: #{pull.html_url}
-
       HEREDOC
     end
   end
