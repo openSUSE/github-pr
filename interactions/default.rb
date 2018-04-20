@@ -156,4 +156,26 @@ Processing #{pull.base.repo.full_name} PR id #{pull.number} by #{pull.head.user.
       []
     end
   end
+
+  class RunHelperAndSetStatusAction < RunCommandAction
+    def action(pull)
+      cmd = command
+      cmd += %W[
+                github.com
+                #{pull.base.repo.owner.login}
+                #{pull.base.repo.name}
+                #{pull.number}
+                #{pull.head.sha}
+                #{pull.head.user.login}
+               ]
+      res = system(*cmd)
+      status = res ? "success":"failure"
+      conf = {
+        "status" => status,
+        "message" => "result: #{status}"
+      }
+      conf["target_url"] = ENV["JENKINS_BUILD_URL"] if ENV["JENKINS_BUILD_URL"]
+      SetStatusAction.new(@metadata, conf).action(pull)
+    end
+  end
 end
