@@ -71,16 +71,17 @@ module GithubPR
 
     def allowed_user?(user)
       if @c.key?("users")
-        return true if @c["users"].include?(user)
+        return @c["users"].include?(user)
       end
       false
     end
 
     def allowed_team?(user)
       if @c.key?("teams")
-        return true if @c["teams"].find do |team|
-          team_member?(team["id"], user)
+        @c["teams"].each do |team|
+          return true if team_member?(team["id"], user)
         end
+        return false
       end
       false
     end
