@@ -71,9 +71,9 @@ module GithubPR
 
     def allowed_user?(user)
       if @c.key?("users")
-        return @c["users"].include?(user)
+        return true if @c["users"].include?(user)
       end
-      true
+      false
     end
 
     def allowed_team?(user)
@@ -81,9 +81,8 @@ module GithubPR
         return true if @c["teams"].find do |team|
           team_member?(team["id"], user)
         end
-        return false
       end
-      true
+      false
     end
 
     def trusted_pull_request_source?(user)
