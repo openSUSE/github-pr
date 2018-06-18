@@ -41,6 +41,9 @@ optparse = OptionParser.new do |opts|
   opts.on("-l", "--debugratelimit", "Debugging API rate limit. Print the Github API rate limit to STDERR before and after processing the action.") do
     base_para[:debugratelimit] = true
   end
+  opts.on("-n", "--dryrun", "Run pull requests through filter chain and produce log output but do not not run the actions defined in the config.") do
+    base_para[:dryrun] = true
+  end
 
   opts.separator ""
   opts.separator "Parameters to set/query a github status"

@@ -17,6 +17,7 @@ class GithubPRWorker
       repository: repo,
       context: context,
       config_base_path: File.dirname(@base_parameters[:config]),
+      dryrun: @base_parameters[:dryrun] ? true : false,
     }
   end
 

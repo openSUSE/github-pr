@@ -17,6 +17,10 @@ module GithubPR
       @metadata = metadata
       @c = config
     end
+
+    def is_dryrun?
+      @metadata[:dryrun] == true
+    end
   end
 
   class Filter < Interaction
@@ -40,6 +44,15 @@ module GithubPR
 
     def action(_pull)
       true
+    end
+
+    def system_cmd(*cmds)
+      if is_dryrun?
+        STDERR.puts "DRYRUN: #{cmds.join(' ')}"
+        return true
+      else
+        system(*cmds) or raise
+      end
     end
   end
 
@@ -122,7 +135,11 @@ module GithubPR
 
   class SetStatusAction < Action
     def action(pull)
-      GithubClient.new(@metadata).create_status(pull.head.sha, @c)
+      if is_dryrun?
+        STDERR.puts "DRYRUN: Not setting status for commit: #{pull.head.sha}"
+      else
+        GithubClient.new(@metadata).create_status(pull.head.sha, @c)
+      end
     end
   end
 
@@ -142,7 +159,7 @@ Processing #{pull.base.repo.full_name} PR id #{pull.number} by #{pull.head.user.
   class RunCommandAction < Action
     def action(_pull)
       cmd = command + parameters
-      system(*cmd) or raise
+      system_cmd(cmd)
     end
 
     def command(key = "command")
@@ -169,7 +186,7 @@ Processing #{pull.base.repo.full_name} PR id #{pull.number} by #{pull.head.user.
                 #{pull.head.sha}
                 #{pull.head.user.login}
                ]
-      res = system(*cmd)
+      res = system_cmd(cmd)
       status = res ? "success":"failure"
       conf = {
         "status" => status,
