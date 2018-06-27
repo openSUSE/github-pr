@@ -47,6 +47,7 @@ module GithubPR
     end
 
     def system_cmd(*cmds)
+      cmds.flatten!
       if is_dryrun?
         STDERR.puts "DRYRUN: #{cmds.join(' ')}"
         return true
