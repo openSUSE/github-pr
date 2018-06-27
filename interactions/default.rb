@@ -118,6 +118,19 @@ module GithubPR
     end
   end
 
+  class ThisPullRequestFilter < Filter
+    def filter_applies?(pull)
+      begin
+        @c[:organization] == pull.base.repo.owner.login &&
+          @c[:repository] == pull.base.repo.name &&
+          @c[:pr]         == pull.number.to_s &&
+          @c[:sha]        == pull.head.sha
+      rescue
+        false
+      end
+    end
+  end
+
   class StatusFilter < Filter
     PULL_REQUEST_STATUS = {
       "unseen"       => [''],

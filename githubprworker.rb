@@ -89,6 +89,10 @@ class GithubPRWorker
           next nil unless @base_parameters[:only_repo] == meta[:org_repo]
         end
         filterchain=[]
+        if @base_parameters.has_key?(:only_pr)
+          this = GithubPR::ThisPullRequestFilter.new(meta, @base_parameters[:only_pr])
+          filterchain.push({filter: this})
+        end
         Array(item["filter"]).each do |pull_filter|
           handler = {}
           fname = "GithubPR::" + pull_filter["type"] + "Filter"

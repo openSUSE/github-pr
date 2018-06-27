@@ -29,7 +29,7 @@ optparse = OptionParser.new do |opts|
   opts.on("-m", "--mode MODE", "Override the 'Status' filter definition(s) in the config file: [unseen rebuild forcerebuild all]") do |o|
     base_para[:mode] = o
   end
-  opts.on("--only", "Process only ORG/REPO from the configuration file that are defined with --org and --repo. Default is to process all repos.") do
+  opts.on("--only", "Process only ORG/REPO from the configuration file that are defined with --org and --repo. Default is to process all repos. In case --org, --repo and --pr and --sha are defined, an additional filter is inserted at the beginning of the filter chain that only matches the pull request if the sha1 sum matches; this is an alternative to use '--this'.") do
     base_para[:only_one_repo] = true
   end
   opts.on("-i", "--interaction_dirs DIR1,DIR2,DIR3", "Directories with interaction files to require. All files 'ia_*.rb' are included from these directories.") do |i|
@@ -43,6 +43,25 @@ optparse = OptionParser.new do |opts|
   end
   opts.on("-n", "--dryrun", "Run pull requests through filter chain and produce log output but do not not run the actions defined in the config.") do
     base_para[:dryrun] = true
+  end
+  opts.on("--this GITHUB_URL", "Will insert a filter at the beginning of the filter chain that only matches a single pull request. It is defined via a github URL of the format: https://github.com/<org>/<repo>/pull/<pr_id>/commits/<sha1> (where sha1 is the latest sha1 sum from the PR) this URL can be copied directly from the browser. This is an alternative to set the values separately together with '--only'.") do |url|
+    re = Regexp.new("^https://github.com/(?<org>[^/]+)/(?<repo>[^/]+)/pull/(?<pr_id>\\d+)/commits/(?<pr_sha1>\\w+)$")
+    matchdata = url.match(re)
+    if matchdata and matchdata.names.size == 4
+      base_para[:only_pr] = {
+        organization: matchdata[:org],
+        repository:   matchdata[:repo],
+        pr:           matchdata[:pr_id],
+        sha:          matchdata[:pr_sha1]
+      }
+      # 'this' implies 'only', so set the org and repo parameters from the match
+      base_para[:only_one_repo] = true
+      options[:organization] = matchdata[:org]
+      options[:repository] = matchdata[:repo]
+    else
+      puts "Error: The value for '--this' parameter does not match the github URL format: https://github.com/<org>/<repo>/pull/<pr_id>/commits/<sha1>"
+      exit 2
+    end
   end
 
   opts.separator ""
@@ -142,6 +161,15 @@ if base_para[:only_one_repo]
   require_parameter(options[:organization], 'Organization undefined.')
   require_parameter(options[:repository], 'Repository undefined.')
   base_para[:only_repo] = "#{options[:organization]}/#{options[:repository]}"
+
+  if options[:pr] && options[:sha]
+    base_para[:only_pr] = {
+      organization: options[:organization],
+      repository:   options[:repository],
+      pr:           options[:pr],
+      sha:          options[:sha]
+    }
+  end
 end
 
 ## main
