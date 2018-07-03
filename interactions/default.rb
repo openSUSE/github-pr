@@ -193,7 +193,7 @@ Processing #{pull.base.repo.full_name} PR id #{pull.number} by #{pull.head.user.
         "status" => status,
         "message" => "result: #{status}"
       }
-      conf["target_url"] = ENV["JENKINS_BUILD_URL"] if ENV["JENKINS_BUILD_URL"]
+      conf["target_url"] = ENV["BUILD_URL"] if ENV["BUILD_URL"]
       SetStatusAction.new(@metadata, conf).action(pull)
     end
   end
