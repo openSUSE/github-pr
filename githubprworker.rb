@@ -96,6 +96,11 @@ class GithubPRWorker
         Array(item["filter"]).each do |pull_filter|
           handler = {}
           fname = "GithubPR::" + pull_filter["type"] + "Filter"
+          fname = "GithubPR::Filter" if
+            pull_filter.has_key?("skippable") &&
+            pull_filter["skippable"] &&
+            @base_parameters.has_key?(:skip) &&
+            @base_parameters[:skip]
           filter_config = pull_filter["config"]
           filter_config = status_filter_config(filter_config) if pull_filter["type"] == "Status"
           handler[:filter] = Object.const_get(fname).new(meta, filter_config)

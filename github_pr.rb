@@ -44,6 +44,9 @@ optparse = OptionParser.new do |opts|
   opts.on("-n", "--dryrun", "Run pull requests through filter chain and produce log output but do not not run the actions defined in the config.") do
     base_para[:dryrun] = true
   end
+  opts.on("--skip", "Skip filters from filter configuration that are flagged as 'skippable: true'. Please use with care. Note: --skip requires --this.") do
+    base_para[:skip] = true
+  end
   opts.on("--this GITHUB_URL", "Will insert a filter at the beginning of the filter chain that only matches a single pull request. It is defined via a github URL of the format: https://github.com/<org>/<repo>/pull/<pr_id>/commits/<sha1> (where sha1 is the latest sha1 sum from the PR) this URL can be copied directly from the browser. This is an alternative to set the values separately together with '--only'.") do |url|
     re = Regexp.new("^https://github.com/(?<org>[^/]+)/(?<repo>[^/]+)/pull/(?<pr_id>\\d+)/commits/(?<pr_sha1>\\w+)$")
     matchdata = url.match(re)
@@ -170,6 +173,10 @@ if base_para[:only_one_repo]
       sha:          options[:sha]
     }
   end
+end
+
+if base_para[:skip]
+  require_parameter(base_para[:only_pr], "Parameter missing: --skip requires --this")
 end
 
 ## main
