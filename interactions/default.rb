@@ -52,7 +52,7 @@ module GithubPR
         STDERR.puts "DRYRUN: #{cmds.join(' ')}"
         return true
       else
-        system(*cmds) or raise
+        system(*cmds) or false
       end
     end
   end
