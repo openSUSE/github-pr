@@ -26,7 +26,9 @@ module GithubPR
   class Filter < Interaction
     def filter(pulls)
       pulls.partition do |pull|
-        filter_applies?(pull)
+        result = filter_applies?(pull)
+        result = !result if @c.has_key?("inverse") && @c["inverse"]
+        result
       end
     end
 
