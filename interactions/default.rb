@@ -18,6 +18,12 @@ module GithubPR
       @c = config
     end
 
+    def pass_through
+      %w(all white black).detect(lambda {"white"}) do |e|
+        e == @c["pass_through"] rescue nil
+      end
+    end
+
     def is_dryrun?
       @metadata[:dryrun] == true
     end

@@ -77,6 +77,14 @@ class GithubPRWorker
       end
       debug_filterchain(black, h[:blacklist_handler])
       debug_filterchain(white, h[:whitelist_handler])
+
+      # if pass_through defines some other than "white"
+      case h[:filter].pass_through
+        when "black"
+          white, black = black, []
+        when "all"
+          white, black = white + black, []
+      end
     end
     return white
   end
@@ -103,6 +111,7 @@ class GithubPRWorker
             @base_parameters[:skip]
           filter_config = pull_filter["config"]
           filter_config = status_filter_config(filter_config) if pull_filter["type"] == "Status"
+          filter_config["pass_through"] = pull_filter["pass_through"] if pull_filter.has_key?("pass_through") && pull_filter["pass_through"]
           handler[:filter] = Object.const_get(fname).new(meta, filter_config)
 
           ["black", "white"].each do |list|
