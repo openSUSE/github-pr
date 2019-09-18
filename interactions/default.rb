@@ -56,12 +56,9 @@ module GithubPR
 
     def system_cmd(*cmds)
       cmds.flatten!
-      if is_dryrun?
-        STDERR.puts "DRYRUN: #{cmds.join(' ')}"
-        return true
-      else
-        system(*cmds) or false
-      end
+      STDERR.puts "INFO system call: #{cmds.inspect}"
+      return true if is_dryrun?
+      system(*cmds) or STDERR.puts "ERROR: system call failed"
     end
   end
 
