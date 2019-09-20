@@ -154,10 +154,19 @@ module GithubPR
 
   class SetStatusAction < Action
     def action(pull)
-      if is_dryrun?
-        STDERR.puts "DRYRUN: Not setting status for commit: #{pull.head.sha}"
-      else
+      STDERR.puts "INFO: Setting status for commit: #{pull.head.sha}"
+      return true if is_dryrun?
+      begin
         GithubClient.new(@metadata).create_status(pull.head.sha, @c)
+      rescue Octokit::UnprocessableEntity => e
+        STDERR.puts "ERROR: Can not create status #{pull.head.sha}"
+        if /maximum number of statuses/.match(e.message)
+          STDERR.puts "ERROR:-The maximum number of statuses is reached for this commit."
+        else
+          STDERR.puts e.message
+          STDERR.puts e.execption_type
+        end
+        return false
       end
     end
   end
