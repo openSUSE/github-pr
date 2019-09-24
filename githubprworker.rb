@@ -38,14 +38,34 @@ class GithubPRWorker
       @base_parameters[:debugfilterchain] == true
   end
 
-  def debug_filterchain(pulls, filter)
-    return unless debug?
-    return unless filter
-    puts "=" * 25
-    puts filter.inspect
-    print_pulls(pulls)
-    puts "-" * 25
+  def debug_message(msg)
+    return unless msg
+    puts msg
   end
+
+  def debug_filter(filter)
+    return unless filter
+    puts filter.inspect
+  end
+
+  def debug_handler(handler)
+    debug_filter(handler)
+  end
+
+  def debug_pulls(pulls)
+    return unless pulls
+    print_pulls(pulls)
+  end
+
+  def debug_print(content)
+    return unless debug?
+    puts content[:pre] * 25 if content[:pre]
+    debug_message(content[:message])
+    debug_filter(content[:filter])
+    debug_handler(content[:handler])
+    debug_pulls(content[:pulls])
+  end
+
 
   def run_actions(pulls, actions)
     return unless actions.is_a?(Array)
@@ -70,14 +90,21 @@ class GithubPRWorker
   def run_filterchain(filterchain, mode, white)
     filterchain.each do |h|
       white, black = h[:filter].filter(white)
-      debug_filterchain(white, h[:filter])
+      debug_print(:message => "Filtering with:",
+                  :filter  => h[:filter],
+                  :pre     => "F " )
       if (mode == :process) then
          run_actions(black, h[:blacklist_handler])
          run_actions(white, h[:whitelist_handler])
       end
-      debug_filterchain(black, h[:blacklist_handler])
-      debug_filterchain(white, h[:whitelist_handler])
-
+      debug_print(:message => "Blacklist handler:",
+                  :handler => h[:blacklist_handler],
+                  :pulls   => black,
+                  :pre     => "- " )
+      debug_print(:message => "Whitelist handler:",
+                  :handler => h[:whitelist_handler],
+                  :pulls   => white,
+                  :pre     => "+ " )
       # if pass_through defines some other than "white"
       case h[:filter].pass_through
         when "black"
@@ -92,6 +119,8 @@ class GithubPRWorker
   def filter_pulls(mode = :get, state = :open)
     process_list.collect do |item|
       repos(item).collect do |repo|
+        debug_print(:message => "Processing: #{item['config']['organization']}/#{repo}",
+                    :pre     => "==" )
         meta = metadata(item["config"]["organization"], repo, item["config"]["context"])
         if @base_parameters.has_key?(:only_repo) then
           next nil unless @base_parameters[:only_repo] == meta[:org_repo]
@@ -127,7 +156,9 @@ class GithubPRWorker
         end
 
         white = GithubClient.new(meta).all_pull_requests(state)
-        debug_filterchain(white, "unfiltered PR list")
+        debug_print(:message => "=> Full and unfiltered PR list:",
+                    :pulls   => white,
+                    :pre     => "PR " )
         run_filterchain(filterchain, mode, white)
       end.reject{ |x| x.nil? }
     end.flatten(2)
