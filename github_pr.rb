@@ -78,7 +78,7 @@ optparse = OptionParser.new do |opts|
   opts.on("-x", "--context context-string", "Github Status Context String") do |x|
     options[:context] = x
   end
-  opts.on("-p", "--pr PRID", "Github Status Context String") do |p|
+  opts.on("-p", "--pr PRID", "Github Pull Request ID") do |p|
     options[:pr] = p
   end
   opts.on("-u", "--sha SHA1SUM", "Github Commit SHA1 Sum") do |u|
